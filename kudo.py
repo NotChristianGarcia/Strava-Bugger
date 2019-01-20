@@ -1,3 +1,13 @@
+"""
+Author: Christian R. Garcia
+Uses Selenium to go through a Strava athlete's complete history of activities in Chrome.
+Goes month by month and gives a kudo to all athlete activities. If the athlete
+participated in a group event then only the specified athlete will receive a kudo, not
+all activities on the page.
+
+Note: Strava will soft-ban your from kudo at around 200 kudos. Random wait times are in
+place to fight against that.
+"""
 import time
 import random
 from getpass import getpass
@@ -52,14 +62,25 @@ def iterate_months(driver, athlete_num, beg_year, beg_month):
     
     while year <= curr_year:
         offset = curr_year - year - 1
-        while month <= 12:
-            driver.get('https://www.strava.com/athletes/' + athlete_num +
-                       '#interval_type?chart_type=miles&interval_type=month' +
-                       '&interval=' + str(year) + "{0:0=2d}".format(month) + 
-		       '&year_offset=' + str(offset))
-            print("Year: " + str(year) + " Month: " + str(month))
-            kudoer(driver)
-            month += 1
+        if year == curr_year:
+            while month <= curr_month:
+                driver.get('https://www.strava.com/athletes/' + athlete_num +
+                           '#interval_type?chart_type=miles&interval_type=month' +
+                           '&interval=' + str(year) + "{0:0=2d}".format(month) + 
+                           '&year_offset=' + str(offset))
+                print("Year: " + str(year) + " Month: " + str(month))
+                kudoer(driver)
+                month += 1
+        
+        else:
+            while month <= 12:
+                driver.get('https://www.strava.com/athletes/' + athlete_num +
+                           '#interval_type?chart_type=miles&interval_type=month' +
+                           '&interval=' + str(year) + "{0:0=2d}".format(month) + 
+                           '&year_offset=' + str(offset))
+                print("Year: " + str(year) + " Month: " + str(month))
+                kudoer(driver)
+                month += 1
         month = 1
         year += 1
 
