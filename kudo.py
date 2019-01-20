@@ -1,45 +1,71 @@
+import time
+import random
 from getpass import getpass
 from datetime import datetime
 from selenium import webdriver
 
 
 def main():
-    date = datetime.today()
-    curr_year = date[0]
-    curr_month = date[1]
-    athlete_num = 547181 #input("Athlete ID: ")
-    driver = webdriver.Chrome()
-    driver.get("https://www.strava.com/athletes/" + athelete_num +
-               "#interval_type?chart_type=miles&interval_type=month" +
-               "&interval=" + curr_year + curr_month + "&year_offset=0")
+    athlete_num = input("Athlete ID: ")
 
+    driver = strava_init()
+    beg_year, beg_month = get_init_cond(driver, athlete_num)
+    iterate_months(driver, athlete_num, beg_year, beg_month)
 
-def get_init_iso():
-    menu = driver.find_element_by_css_selector('.drop-down-menu.drop-down-sm.enabled')
-    menu.click()
-    options = menu.find_elements_by_tag_name('a')
-
-    beg_date = options[-1:][0].text
-    datetime.strptime(beg_date.split(' - ')[0], '%b %d, %Y')
-
-
-def login():
-    driver.get("https://www.strava.com/login")
-    email_field = driver.find_element_by_xpath('//*[@id="email"]')
-    password_field = driver.find_element_by_xpath('//*[@id="password"]')
-
+def strava_init():
     email = input("Email: ")
     password = getpass("Password: ")
 
+    driver = webdriver.Chrome()
+    driver.get("https://www.strava.com/login")
+    email_field = driver.find_element_by_xpath('//*[@id="email"]')
+    password_field = driver.find_element_by_xpath('//*[@id="password"]')
+    
     email_field.send_keys(email)
     password_field.send_keys(password)
 
     driver.find_element_by_xpath('//*[@id="login-button"]').click()
     time.sleep(2)
+    return driver
 
 
-def kudoer():
-    time.sleep(2)
+def get_init_cond(driver, athlete_num):
+    driver.get('https://www.strava.com/athletes/' + athlete_num)
+    menu = driver.find_element_by_css_selector('.drop-down-menu.drop-down-sm.enabled')
+    menu.click()
+    options = menu.find_elements_by_tag_name('a')
+
+    beg_string = options[-1:][0].text.split(' - ')[0]
+    beg_month = beg_string[:3]
+    beg_month = int(time.strptime(beg_month, '%b').tm_mon)
+    beg_year = int(beg_string[-4:])
+    return beg_year, beg_month
+
+
+def iterate_months(driver, athlete_num, beg_year, beg_month):
+    year = beg_year
+    month = beg_month
+    
+    date = datetime.today()
+    curr_year = date.year
+    curr_month = date.month
+    
+    while year <= curr_year:
+        offset = curr_year - year - 1
+        while month <= 12:
+            driver.get('https://www.strava.com/athletes/' + athlete_num +
+                       '#interval_type?chart_type=miles&interval_type=month' +
+                       '&interval=' + str(year) + "{0:0=2d}".format(month) + 
+		       '&year_offset=' + str(offset))
+            print("Year: " + str(year) + " Month: " + str(month))
+            kudoer(driver)
+            month += 1
+        month = 1
+        year += 1
+
+
+def kudoer(driver):
+    time.sleep(3)
     athlete_rides = driver.find_elements_by_css_selector('.activity.entity-details.feed-entry')
     group_rides = driver.find_elements_by_css_selector('.list-entries')
 
@@ -48,11 +74,13 @@ def kudoer():
 
     for ride in athlete_rides:
         try:
-            print(ride.find_element_by_css_selector('.btn.btn-default.btn-kudo.btn-xs.js-add-kudo'))
-            #ride.find_element_by_css_selector('.btn.btn-default.btn-kudo.btn-xs.js-add-kudo').click()
+            #print(ride.find_element_by_css_selector('.btn.btn-default.btn-kudo.btn-xs.js-add-kudo'))
+            ride.find_element_by_css_selector('.btn.btn-default.btn-kudo.btn-xs.js-add-kudo').click()
+            print("Kudoed")
+            time.sleep(int(random.uniform(3, 6)))
         except:
             pass
 
 
-if __name__ = "__main__":
+if __name__ == "__main__":
     main()
