@@ -15,7 +15,6 @@ from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import StaleElementReferenceException
 
 def main():
     athlete_num = input("Athlete ID: ")
@@ -28,7 +27,7 @@ def main():
 
 def strava_init():
     email = input("Email: ")
-    password = getpass("Password: ")
+    password = getpass("Password: ")    
 
     driver = webdriver.Chrome()
     driver.get("https://www.strava.com/login")
@@ -106,6 +105,7 @@ def iterate_months(driver, athlete_num, start_cond, end_cond):
                        '#interval_type?chart_type=miles&interval_type=month' +
                        '&interval=' + str(year) + "{0:0=2d}".format(month) + 
                        '&year_offset=' + str(offset))
+            time.sleep(int(random.uniform(2, 4)))
             wait_for_ajax(driver)
             kudoer(driver)
             month += 1
