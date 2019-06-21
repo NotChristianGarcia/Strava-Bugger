@@ -17,17 +17,23 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 
 def main():
-    athlete_num = input("Athlete ID: ")
+    athlete_list = input("Athlete ID(s): ").split()
     start_inp = input("Start time ('2016 6'): ")
     end_inp = input("End time ('2019 4'): ")
-
-    driver = strava_init()
-    start_cond, end_cond = get_param(driver, athlete_num, start_inp, end_inp)
-    iterate_months(driver, athlete_num, start_cond, end_cond)
+    
+    driver = strava_init() 
+    for athlete_num in athlete_list:
+        print(f'\nWorking on athlete number: {athlete_num}')
+        start_cond, end_cond = get_param(driver, athlete_num, start_inp, end_inp)
+        iterate_months(driver, athlete_num, start_cond, end_cond)
+        print('\n')
 
 def strava_init():
-    email = input("Email: ")
-    password = getpass("Password: ")    
+    #email = input("Email: ")
+    #password = getpass("Password: ")
+    
+    email = 'christian.g21@gmail.com'
+    password = 'H//u6)Gu2z>je2r47P283mCJ6Pf:N7y'
 
     driver = webdriver.Chrome()
     driver.get("https://www.strava.com/login")
@@ -100,15 +106,16 @@ def iterate_months(driver, athlete_num, start_cond, end_cond):
             loop_end_month = 12
 
         while month <= loop_end_month:
-            print(f"\nYear: {year} Month: {month}")
+            print(f"Year: {year} Month: {month}")
             driver.get('https://www.strava.com/athletes/' + athlete_num +
                        '#interval_type?chart_type=miles&interval_type=month' +
                        '&interval=' + str(year) + "{0:0=2d}".format(month) + 
                        '&year_offset=' + str(offset))
-            time.sleep(int(random.uniform(2, 4)))
+            time.sleep(random.uniform(2.5, 5))
             wait_for_ajax(driver)
             kudoer(driver)
             month += 1
+        time.sleep(random.uniform(2.5, 5))
         month = 1
         year += 1
 
@@ -128,14 +135,17 @@ def kudoer(driver):
     if True:
         for challenge in challenges:
             kudoable_items.append(challenge)
-    
+
     for item in kudoable_items:
         try:
             item.find_element_by_css_selector('.btn.btn-default.btn-kudo.btn-xs.js-add-kudo').click()
             print("✓", end='', flush=True)
-            time.sleep(int(random.uniform(3, 6)))
+            time.sleep(random.uniform(2.5, 5))
         except NoSuchElementException:
             print(".", end='', flush=True)
+    
+    if kudoable_items:
+        print('')
 
 
 def wait_for_ajax(driver):
